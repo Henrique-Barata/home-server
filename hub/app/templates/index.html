@@ -15,7 +15,7 @@
 
         <main class="apps-grid">
             {% for app in apps %}
-            <div class="app-card" data-app-id="{{ app.id }}" style="--app-color: {{ app.color }}">
+            <div class="app-card" data-app-id="{{ app.id }}" data-port="{{ app.port }}" style="--app-color: {{ app.color }}">
                 <div class="app-icon">{{ app.icon }}</div>
                 <div class="app-info">
                     <h2 class="app-name">{{ app.name }}</h2>
@@ -38,9 +38,15 @@
                     <button class="btn btn-restart" onclick="restartApp('{{ app.id }}')">
                         Restart
                     </button>
+                    <button class="btn btn-logs" onclick="viewLogs('{{ app.id }}')">
+                        Logs
+                    </button>
                     {% else %}
                     <button class="btn btn-start" onclick="startApp('{{ app.id }}')">
                         Start App
+                    </button>
+                    <button class="btn btn-logs" onclick="viewLogs('{{ app.id }}')">
+                        Logs
                     </button>
                     {% endif %}
                 </div>
@@ -62,6 +68,24 @@
 
     <!-- Toast notification -->
     <div id="toast" class="toast hidden"></div>
+
+    <!-- Logs modal -->
+    <div id="logs-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="logs-title">App Logs</h3>
+                <button class="close-btn" onclick="closeLogsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="logs-controls">
+                    <button class="btn btn-small" onclick="switchLogType('stdout')">stdout</button>
+                    <button class="btn btn-small" onclick="switchLogType('stderr')">stderr</button>
+                    <button class="btn btn-small" onclick="refreshLogs()">Refresh</button>
+                </div>
+                <pre id="logs-content" class="logs-content">Loading logs...</pre>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Show toast notification
@@ -92,6 +116,12 @@
             const statusIndicator = card.querySelector('.status-indicator');
             const actionsDiv = card.querySelector('.app-actions');
 
+            // Update port display if present
+            const portSpan = card.querySelector('.app-port');
+            if (portSpan && status.port !== undefined) {
+                portSpan.textContent = `Port: ${status.port}`;
+            }
+
             if (status.running) {
                 statusIndicator.className = 'status-indicator running';
                 statusIndicator.textContent = '● Running';
@@ -100,11 +130,13 @@
                 actionsDiv.appendChild(createButton('Open App', 'btn btn-open', () => openApp(appId)));
                 actionsDiv.appendChild(createButton('Stop', 'btn btn-stop', () => stopApp(appId)));
                 actionsDiv.appendChild(createButton('Restart', 'btn btn-restart', () => restartApp(appId)));
+                actionsDiv.appendChild(createButton('Logs', 'btn btn-logs', () => viewLogs(appId)));
             } else {
                 statusIndicator.className = 'status-indicator stopped';
                 statusIndicator.textContent = '○ Stopped';
                 // Clear and rebuild buttons safely to prevent XSS
                 actionsDiv.replaceChildren();
+                actionsDiv.appendChild(createButton('Logs', 'btn btn-logs', () => viewLogs(appId)));
                 actionsDiv.appendChild(createButton('Start App', 'btn btn-start', () => startApp(appId)));
             }
         }
@@ -112,16 +144,19 @@
         // Start an application
         async function startApp(appId) {
             showToast('Starting app...', 'info');
-            
+
             try {
                 const response = await fetch(`/api/apps/${appId}/start`, {
                     method: 'POST'
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showToast(data.message || 'App started!', 'success');
-                    updateAppCard(appId, { running: true });
+                    // Update UI to show running state and attach Logs button
+                    // Prefer explicit port from API response or fallback to config
+                    const newPort = data.port || (data.url ? new URL(data.url).port : undefined);
+                    updateAppCard(appId, { running: true, port: newPort });
                 } else {
                     showToast(data.error || 'Failed to start app', 'error');
                 }
@@ -172,25 +207,32 @@
             }
         }
 
-        // Open application in new tab (constructs URL from known safe values)
+        // Open application in new tab
+        // Uses locally-constructed URL from known-safe port values to prevent open redirect
         async function openApp(appId) {
             try {
-                const response = await fetch(`/api/apps/${appId}/status`);
-                const data = await response.json();
-                
-                if (data.success && data.status && data.status.running) {
-                    // Construct URL locally from trusted port value
-                    // Using window.location.hostname ensures same host as hub
-                    const port = data.status.port;
-                    if (typeof port === 'number' && port > 0 && port < 65536) {
-                        const safeUrl = `http://${window.location.hostname}:${port}`;
-                        window.open(safeUrl, '_blank');
-                    } else {
-                        showToast('Invalid port configuration', 'error');
-                    }
-                } else {
-                    showToast('App is not running', 'error');
+                // First, get the app status to find the port from the cards we already have
+                const card = document.querySelector(`[data-app-id="${appId}"]`);
+                if (!card) {
+                    showToast('App card not found', 'error');
+                    return;
                 }
+
+                // Get the port from the card dataset (this was set from our own server data)
+                const port = card.dataset.port;
+                if (!port || isNaN(parseInt(port))) {
+                    showToast('Invalid app configuration', 'error');
+                    return;
+                }
+
+                // Construct a safe URL from the validated port number
+                // Only localhost URLs are allowed
+                const safeUrl = `http://127.0.0.1:${parseInt(port)}`;
+                window.open(safeUrl, '_blank');
+
+                // Also record activity via API (fire-and-forget)
+                fetch(`/api/apps/${appId}/activity`, { method: 'POST' }).catch(() => {});
+
             } catch (error) {
                 showToast('Error opening app: ' + error.message, 'error');
             }
@@ -211,6 +253,59 @@
                 console.error('Failed to refresh status:', error);
             }
         }
+
+        // Logs modal functionality
+        let currentAppId = null;
+        let currentLogType = 'stderr';
+
+        function viewLogs(appId) {
+            currentAppId = appId;
+            currentLogType = 'stderr';
+            document.getElementById('logs-title').textContent = `Logs for ${appId}`;
+            document.getElementById('logs-modal').classList.remove('hidden');
+            loadLogs();
+        }
+
+        function closeLogsModal() {
+            document.getElementById('logs-modal').classList.add('hidden');
+            currentAppId = null;
+        }
+
+        function switchLogType(type) {
+            currentLogType = type;
+            loadLogs();
+        }
+
+        function refreshLogs() {
+            loadLogs();
+        }
+
+        async function loadLogs() {
+            if (!currentAppId) return;
+
+            const logsContent = document.getElementById('logs-content');
+            logsContent.textContent = 'Loading logs...';
+
+            try {
+                const response = await fetch(`/api/apps/${currentAppId}/logs?type=${currentLogType}&lines=200`);
+                const data = await response.json();
+
+                if (data.success) {
+                    logsContent.textContent = data.log_content || 'No logs available';
+                } else {
+                    logsContent.textContent = `Error loading logs: ${data.error}`;
+                }
+            } catch (error) {
+                logsContent.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLogsModal();
+            }
+        });
 
         // Refresh status every 10 seconds
         setInterval(refreshStatus, 10000);

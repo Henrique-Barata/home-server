@@ -1,0 +1,36 @@
+2026-01-09 18:07:43 | INFO     | hub | Creating Hub application...
+2026-01-09 18:07:43 | INFO     | app_manager | Loaded config with 1 apps
+2026-01-09 18:07:43 | INFO     | app_manager | AppManager initialized with config: /Users/henrique.barata/CODE/home-server/hub/config.yaml
+2026-01-09 18:07:43 | INFO     | app_manager | Hub root: /Users/henrique.barata/CODE/home-server/hub
+2026-01-09 18:07:43 | INFO     | hub | Hub application created successfully
+
+╔═══════════════════════════════════════════════════════════╗
+║           🏠 Home Server Hub                              ║
+╠═══════════════════════════════════════════════════════════╣
+║  Running on: http://0.0.0.0:8000                       
+║  Debug mode: False                                      
+║                                                           ║
+║  Press Ctrl+C to stop                                     ║
+╚═══════════════════════════════════════════════════════════╝
+
+ * Serving Flask app 'app'
+ * Debug mode: off
+2026-01-09 18:07:57 | INFO     | api | API request to start app 'expenses'
+2026-01-09 18:07:57 | INFO     | app_manager | Loaded config with 1 apps
+2026-01-09 18:07:57 | INFO     | app_manager | AppManager initialized with config: /Users/henrique.barata/CODE/home-server/hub/config.yaml
+2026-01-09 18:07:57 | INFO     | app_manager | Hub root: /Users/henrique.barata/CODE/home-server/hub
+2026-01-09 18:07:57 | INFO     | app_manager | Starting app 'expenses'
+2026-01-09 18:07:57 | INFO     | app_manager | Starting with command: /Users/henrique.barata/CODE/home-server/expensesApp/venv/bin/python /Users/henrique.barata/CODE/home-server/expensesApp/run.py --host 127.0.0.1 --port 5000
+2026-01-09 18:07:57 | INFO     | app_manager | Started app 'expenses' with PID 82004
+2026-01-09 18:07:59 | INFO     | app_manager | App 'expenses' is now responding on port 5000
+2026-01-09 18:07:59 | INFO     | scheduler | AppActivityTracker initialized with 15m default timeout, 60s check interval
+2026-01-09 18:07:59 | INFO     | scheduler | Auto-shutdown scheduler started
+2026-01-09 18:08:05 | INFO     | api | Listed 1 apps
+2026-01-09 18:08:15 | INFO     | api | Listed 1 apps
+2026-01-09 18:08:25 | INFO     | api | Listed 1 apps
+2026-01-09 18:08:35 | INFO     | api | Listed 1 apps
+2026-01-09 18:08:45 | INFO     | api | Listed 1 apps
+2026-01-09 18:08:55 | INFO     | api | Listed 1 apps
+2026-01-09 18:09:35 | INFO     | api | Listed 1 apps
+2026-01-09 18:10:35 | INFO     | api | Listed 1 apps
+2026-01-09 18:11:35 | INFO     | api | Listed 1 apps

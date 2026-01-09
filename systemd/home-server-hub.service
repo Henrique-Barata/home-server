@@ -1,0 +1,36 @@
+[Unit]
+Description=Home Server Hub
+Documentation=https://github.com/yourusername/home-server
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/home-server/hub
+EnvironmentFile=/home/pi/home-server/.env
+
+# Python venv activation
+Environment="PATH=/home/pi/home-server/hub/venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/home/pi/home-server/hub"
+
+# Run the hub
+ExecStart=/home/pi/home-server/hub/venv/bin/python /home/pi/home-server/hub/run.py
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Logging
+StandardOutput=append:/home/pi/home-server/logs/hub_stdout.log
+StandardError=append:/home/pi/home-server/logs/hub_stderr.log
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/home-server
+
+[Install]
+WantedBy=multi-user.target

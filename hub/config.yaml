@@ -5,6 +5,11 @@ hub:
   name: "Home Server Hub"
   description: "Central management for home server applications"
   version: "1.0.0"
+  # Auto-shutdown settings
+  scheduler:
+    enabled: true
+    default_idle_timeout_minutes: 15  # Apps shutdown after 15 min of inactivity
+    check_interval_seconds: 60        # Check for idle apps every 60 seconds
 
 apps:
   expenses:
@@ -17,6 +22,8 @@ apps:
     port: 5000
     host: "127.0.0.1"
     health_endpoint: "/"
+    # App-specific idle timeout (optional, overrides default)
+    idle_timeout_minutes: 15
     # Future container config
     container:
       enabled: false

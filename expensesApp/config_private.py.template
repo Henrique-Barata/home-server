@@ -1,0 +1,28 @@
+"""
+Private Configuration Template
+-------------------------------
+Copy this file to config_private.py and fill in your personal settings.
+DO NOT commit config_private.py to version control!
+
+This file contains sensitive information like passwords and personal data.
+"""
+
+# Security Settings
+SECRET_KEY = "your-secret-key-here-make-it-random-and-long"
+APP_PASSWORD = "your-app-password-here"
+
+# User Configuration
+# List the names of people who will be tracked in the expense app
+USERS = ["Person1", "Person2"]
+
+# Optional: Customize expense categories
+# Uncomment and modify if you want different categories
+
+# UTILITY_TYPES = ["Electricity", "Gas", "Water", "Internet"]
+# FIXED_EXPENSE_TYPES = ["Rent", "Internet", "Insurance"]
+
+# Optional: Database location
+# Uncomment to use a custom database path
+# import os
+# from pathlib import Path
+# DATABASE_PATH = Path(__file__).parent / "data" / "expenses.db"

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Stuff Expenses - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🛒 Stuff Expenses</h1>
+    <div class="header-actions">
+        <a href="{{ url_for('stuff.manage_types') }}" class="btn btn-secondary">Manage Types</a>
+        <a href="{{ url_for('stuff.add') }}" class="btn btn-primary">+ Add Expense</a>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <h3>Total</h3>
+        <p class="amount">€{{ "%.2f"|format(total) }}</p>
+    </div>
+    {% for person, person_total in person_totals.items() %}
+    <div class="summary-card">
+        <h3>{{ person }}</h3>
+        <p class="amount">€{{ "%.2f"|format(person_total) }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Filter -->
+<div class="filter-bar">
+    <form method="GET" class="filter-form">
+        <div class="filter-group">
+            <label for="type">Filter by Type:</label>
+            <select name="type" id="type">
+                <option value="">All Types</option>
+                {% for stype in stuff_types %}
+                <option value="{{ stype.name }}" {% if filter_type == stype.name %}selected{% endif %}>{{ stype.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort">
+                <option value="amount" {% if sort_by == 'amount' %}selected{% endif %}>Amount (Highest First)</option>
+                <option value="date" {% if sort_by == 'date' %}selected{% endif %}>Date (Newest First)</option>
+                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                <option value="alpha" {% if sort_by == 'alpha' %}selected{% endif %}>Category (A-Z)</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="year">Year:</label>
+            <select name="year" id="year">
+                {% for year_option in available_years %}
+                <option value="{{ year_option }}" {% if year_option == selected_year %}selected{% endif %}>{{ year_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Apply</button>
+        
+        {% if filter_type or sort_by != 'amount' %}
+        <a href="{{ url_for('stuff.index') }}" class="btn btn-sm">Clear All</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Expenses List -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Paid By</th>
+                    <th class="text-right">Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                    <td><span class="type-badge">{{ expense.stuff_type }}</span></td>
+                    <td>{{ expense.name }}</td>
+                    <td>{{ expense.paid_by }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('stuff.edit', expense_id=expense.id) }}" class="btn btn-sm">Edit</a>
+                        <form action="{{ url_for('stuff.delete', expense_id=expense.id) }}" method="POST" class="inline-form">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this expense?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No stuff expenses yet. <a href="{{ url_for('stuff.add') }}">Add one</a>.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Expenses by Category -->
+{% if sorted_categories %}
+<div class="card">
+    <h2>📊 Expenses by Category</h2>
+    <div class="category-breakdown">
+        {% for category, total in sorted_categories %}
+        <div class="category-section">
+            <div class="category-header">
+                <h3>{{ category }}</h3>
+                <span class="category-total">€{{ "%.2f"|format(total) }}</span>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table category-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Paid By</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses_by_category[category] %}
+                        <tr>
+                            <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ expense.name }}</td>
+                            <td>{{ expense.paid_by }}</td>
+                            <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

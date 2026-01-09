@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Utilities - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>⚡ Utilities</h1>
+    <a href="{{ url_for('utilities.add') }}" class="btn btn-primary">+ Add Expense</a>
+</div>
+
+<!-- Year Selector -->
+<div class="filter-bar">
+    <form method="GET" class="filter-form">
+        <div class="filter-group">
+            <label for="year">Year:</label>
+            <select name="year" id="year">
+                {% for year_option in available_years %}
+                <option value="{{ year_option }}" {% if year_option == selected_year %}selected{% endif %}>{{ year_option }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+</div>
+
+<!-- Summary by Type -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <h3>Total</h3>
+        <p class="amount">€{{ "%.2f"|format(total) }}</p>
+    </div>
+    {% for utility_type, type_total in type_totals.items() %}
+    <div class="summary-card">
+        <h3>{{ utility_type }}</h3>
+        <p class="amount">€{{ "%.2f"|format(type_total) }}</p>
+        {% if utility_type == 'Internet' %}
+        <small>(Fixed expense)</small>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Internet Notice -->
+<div class="info-box">
+    ℹ️ Internet is managed as a fixed expense. <a href="{{ url_for('fixed.index') }}">Edit in Fixed Expenses</a>.
+</div>
+
+<!-- Expenses List -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Paid By</th>
+                    <th class="text-right">Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ expense.utility_type }}</td>
+                    <td>{{ expense.name }}</td>
+                    <td>{{ expense.paid_by }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                    <td class="actions">
+                        <a href="{{ url_for('utilities.edit', expense_id=expense.id) }}" class="btn btn-sm">Edit</a>
+                        <form action="{{ url_for('utilities.delete', expense_id=expense.id) }}" method="POST" class="inline-form">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this expense?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No utility expenses yet. <a href="{{ url_for('utilities.add') }}">Add one</a>.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

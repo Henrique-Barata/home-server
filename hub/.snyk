@@ -1,0 +1,12 @@
+# Snyk Policy File
+# https://snyk.io/docs/snyk-policy/
+version: v1.25.0
+ignore:
+  # The port value is derived from our own config.yaml, not user input.
+  # The URL is constructed client-side using window.location.hostname
+  # which ensures we only redirect to the same host. Port validation
+  # ensures it's a valid number. This is a false positive.
+  javascript/OR:
+    - "*":
+        reason: "Port comes from server config, URL constructed safely with window.location.hostname"
+        expires: 2027-01-09T00:00:00.000Z

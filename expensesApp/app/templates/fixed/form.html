@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Update {{ expense_type }} - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📌 Update {{ expense_type }}</h1>
+</div>
+
+<div class="card form-card">
+    {% if current %}
+    <div class="info-box">
+        Current value: <strong>€{{ "%.2f"|format(current.amount) }}</strong>
+        (effective since {{ current.effective_date.strftime('%d/%m/%Y') }})
+    </div>
+    {% endif %}
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="amount">New Amount (€)</label>
+            <input type="number" id="amount" name="amount" required step="0.01" min="0"
+                   value="{{ current.amount if current else '' }}"
+                   placeholder="0.00">
+        </div>
+        
+        <div class="form-group">
+            <label for="paid_by">Paid By</label>
+            <select id="paid_by" name="paid_by" required>
+                {% for user in users %}
+                <option value="{{ user }}" {% if current and current.paid_by == user %}selected{% endif %}>
+                    {{ user }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="effective_date">Effective From (First of Month)</label>
+            <input type="date" id="effective_date" name="effective_date" required
+                   value="{{ default_effective.isoformat() }}">
+            <small class="form-hint">✅ Fixed expenses are applied on the 1st of each month automatically.</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update {{ expense_type }}</button>
+            <a href="{{ url_for('fixed.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

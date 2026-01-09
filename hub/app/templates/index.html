@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ hub.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="hub-header">
+            <h1>🏠 {{ hub.name }}</h1>
+            <p class="hub-description">{{ hub.description }}</p>
+        </header>
+
+        <main class="apps-grid">
+            {% for app in apps %}
+            <div class="app-card" data-app-id="{{ app.id }}" style="--app-color: {{ app.color }}">
+                <div class="app-icon">{{ app.icon }}</div>
+                <div class="app-info">
+                    <h2 class="app-name">{{ app.name }}</h2>
+                    <p class="app-description">{{ app.description }}</p>
+                </div>
+                <div class="app-status">
+                    <span class="status-indicator {% if app.status.running %}running{% else %}stopped{% endif %}">
+                        {% if app.status.running %}● Running{% else %}○ Stopped{% endif %}
+                    </span>
+                    <span class="app-port">Port: {{ app.port }}</span>
+                </div>
+                <div class="app-actions">
+                    {% if app.status.running %}
+                    <button class="btn btn-open" onclick="openApp('{{ app.id }}')">
+                        Open App
+                    </button>
+                    <button class="btn btn-stop" onclick="stopApp('{{ app.id }}')">
+                        Stop
+                    </button>
+                    <button class="btn btn-restart" onclick="restartApp('{{ app.id }}')">
+                        Restart
+                    </button>
+                    {% else %}
+                    <button class="btn btn-start" onclick="startApp('{{ app.id }}')">
+                        Start App
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if not apps %}
+            <div class="no-apps">
+                <p>No apps configured yet.</p>
+                <p>Add apps to <code>config.yaml</code> to get started.</p>
+            </div>
+            {% endif %}
+        </main>
+
+        <footer class="hub-footer">
+            <p>{{ hub.name }} v{{ hub.version }}</p>
+        </footer>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script>
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        // Helper function to create buttons safely (prevents XSS)
+        function createButton(text, className, onClick) {
+            const btn = document.createElement('button');
+            btn.textContent = text;
+            btn.className = className;
+            btn.addEventListener('click', onClick);
+            return btn;
+        }
+
+        // Update app card status
+        function updateAppCard(appId, status) {
+            const card = document.querySelector(`[data-app-id="${appId}"]`);
+            if (!card) return;
+
+            const statusIndicator = card.querySelector('.status-indicator');
+            const actionsDiv = card.querySelector('.app-actions');
+
+            if (status.running) {
+                statusIndicator.className = 'status-indicator running';
+                statusIndicator.textContent = '● Running';
+                // Clear and rebuild buttons safely to prevent XSS
+                actionsDiv.replaceChildren();
+                actionsDiv.appendChild(createButton('Open App', 'btn btn-open', () => openApp(appId)));
+                actionsDiv.appendChild(createButton('Stop', 'btn btn-stop', () => stopApp(appId)));
+                actionsDiv.appendChild(createButton('Restart', 'btn btn-restart', () => restartApp(appId)));
+            } else {
+                statusIndicator.className = 'status-indicator stopped';
+                statusIndicator.textContent = '○ Stopped';
+                // Clear and rebuild buttons safely to prevent XSS
+                actionsDiv.replaceChildren();
+                actionsDiv.appendChild(createButton('Start App', 'btn btn-start', () => startApp(appId)));
+            }
+        }
+
+        // Start an application
+        async function startApp(appId) {
+            showToast('Starting app...', 'info');
+            
+            try {
+                const response = await fetch(`/api/apps/${appId}/start`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(data.message || 'App started!', 'success');
+                    updateAppCard(appId, { running: true });
+                } else {
+                    showToast(data.error || 'Failed to start app', 'error');
+                }
+            } catch (error) {
+                showToast('Error starting app: ' + error.message, 'error');
+            }
+        }
+
+        // Stop an application
+        async function stopApp(appId) {
+            showToast('Stopping app...', 'info');
+            
+            try {
+                const response = await fetch(`/api/apps/${appId}/stop`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(data.message || 'App stopped!', 'success');
+                    updateAppCard(appId, { running: false });
+                } else {
+                    showToast(data.error || 'Failed to stop app', 'error');
+                }
+            } catch (error) {
+                showToast('Error stopping app: ' + error.message, 'error');
+            }
+        }
+
+        // Restart an application
+        async function restartApp(appId) {
+            showToast('Restarting app...', 'info');
+            
+            try {
+                const response = await fetch(`/api/apps/${appId}/restart`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(data.message || 'App restarted!', 'success');
+                    updateAppCard(appId, { running: true });
+                } else {
+                    showToast(data.error || 'Failed to restart app', 'error');
+                }
+            } catch (error) {
+                showToast('Error restarting app: ' + error.message, 'error');
+            }
+        }
+
+        // Open application in new tab (constructs URL from known safe values)
+        async function openApp(appId) {
+            try {
+                const response = await fetch(`/api/apps/${appId}/status`);
+                const data = await response.json();
+                
+                if (data.success && data.status && data.status.running) {
+                    // Construct URL locally from trusted port value
+                    // Using window.location.hostname ensures same host as hub
+                    const port = data.status.port;
+                    if (typeof port === 'number' && port > 0 && port < 65536) {
+                        const safeUrl = `http://${window.location.hostname}:${port}`;
+                        window.open(safeUrl, '_blank');
+                    } else {
+                        showToast('Invalid port configuration', 'error');
+                    }
+                } else {
+                    showToast('App is not running', 'error');
+                }
+            } catch (error) {
+                showToast('Error opening app: ' + error.message, 'error');
+            }
+        }
+
+        // Periodically refresh status
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/api/apps');
+                const data = await response.json();
+                
+                if (data.success && data.apps) {
+                    data.apps.forEach(app => {
+                        updateAppCard(app.id, app.status);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to refresh status:', error);
+            }
+        }
+
+        // Refresh status every 10 seconds
+        setInterval(refreshStatus, 10000);
+    </script>
+</body>
+</html>

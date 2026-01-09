@@ -1,0 +1,34 @@
+# Home Server Hub Configuration
+# Define your apps here
+
+hub:
+  name: "Home Server Hub"
+  description: "Central management for home server applications"
+  version: "1.0.0"
+
+apps:
+  expenses:
+    name: "Expenses Tracker"
+    description: "Track household expenses and settlements"
+    icon: "💰"
+    color: "#4CAF50"
+    path: "../expensesApp"
+    entry: "run.py"
+    port: 5000
+    host: "127.0.0.1"
+    health_endpoint: "/"
+    # Future container config
+    container:
+      enabled: false
+      image: "expenses-app:latest"
+      dockerfile: "Dockerfile"
+
+# Future apps can be added here:
+# photos:
+#   name: "Photo Gallery"
+#   description: "Personal photo management"
+#   icon: "📷"
+#   color: "#2196F3"
+#   path: "../photosApp"
+#   entry: "run.py"
+#   port: 5001

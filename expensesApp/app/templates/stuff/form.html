@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{% if expense %}Edit{% else %}Add{% endif %} Stuff Expense - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🛒 {% if expense %}Edit{% else %}Add{% endif %} Stuff Expense</h1>
+</div>
+
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="stuff_type">Type/Category</label>
+            <select id="stuff_type" name="stuff_type">
+                <option value="">Select type or add new below...</option>
+                {% for stype in stuff_types %}
+                <option value="{{ stype.name }}" {% if expense and expense.stuff_type == stype.name %}selected{% endif %}>{{ stype.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="new_type">Or Create New Type</label>
+            <input type="text" id="new_type" name="new_type" 
+                   placeholder="e.g., Electronics, Clothing">
+            <small class="form-hint">Leave empty to use the selected type above.</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="name">Description</label>
+            <input type="text" id="name" name="name" 
+                   value="{{ expense.name if expense else '' }}"
+                   placeholder="e.g., New headphones">
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">Amount (€)</label>
+            <input type="number" id="amount" name="amount" required step="0.01" min="0"
+                   value="{{ expense.amount if expense else '' }}"
+                   placeholder="0.00">
+        </div>
+        
+        <div class="form-group">
+            <label for="paid_by">Who Paid</label>
+            <select id="paid_by" name="paid_by" required>
+                <option value="">Select person...</option>
+                {% for user in users %}
+                <option value="{{ user }}" {% if expense and expense.paid_by == user %}selected{% endif %}>{{ user }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="expense_date">Date
+                {% if month_name %}
+                <span class="month-badge">📅 {{ month_name }} {{ selected_date.year }} pre-selected</span>
+                {% endif %}
+            </label>
+            <input type="date" id="expense_date" name="expense_date" required
+                   value="{{ selected_date.isoformat() if selected_date else today.isoformat() }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="individual_only">
+                <input type="checkbox" id="individual_only" name="individual_only" 
+                       {% if expense and expense.individual_only %}checked{% endif %}>
+                <span>Individual Only (not split with others)</span>
+            </label>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{% if expense %}Update{% else %}Add{% endif %} Expense</button>
+            <a href="{{ url_for('stuff.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

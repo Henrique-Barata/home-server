@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}{{ person }}'s Expenses - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>👤 {{ person }}'s Expenses</h1>
+    <a href="{{ url_for('dashboard.index', year=year) }}" class="btn btn-secondary">← Back to Overview</a>
+</div>
+
+<!-- Filters -->
+<div class="card filter-card">
+    <form method="GET" class="filter-form">
+        <div class="filter-group">
+            <label for="year">Year:</label>
+            <select name="year" id="year" onchange="this.form.submit()">
+                {% for y in available_years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="month">Month:</label>
+            <select name="month" id="month" onchange="this.form.submit()">
+                {% for i in range(13) %}
+                <option value="{{ i }}" {% if i == month %}selected{% endif %}>{{ month_names[i] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+<!-- Summary -->
+<div class="card summary-card">
+    <h2>Summary: {{ month_name }} {{ year }}</h2>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <span class="label">Food</span>
+            <span class="value">€{{ "%.2f"|format(food_total) }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">Utilities</span>
+            <span class="value">€{{ "%.2f"|format(utility_total) }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">Stuff</span>
+            <span class="value">€{{ "%.2f"|format(stuff_total) }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="label">Other</span>
+            <span class="value">€{{ "%.2f"|format(other_total) }}</span>
+        </div>
+        <div class="summary-item total">
+            <span class="label">Total Paid</span>
+            <span class="value">€{{ "%.2f"|format(grand_total) }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Food Expenses -->
+{% if food_expenses %}
+<div class="card">
+    <h2>🍕 Food Expenses ({{ food_expenses|length }})</h2>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in food_expenses %}
+                <tr>
+                    <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ expense.name }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="grand-total">
+                    <td colspan="2"><strong>Total</strong></td>
+                    <td class="text-right"><strong>€{{ "%.2f"|format(food_total) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Utility Expenses -->
+{% if utility_expenses %}
+<div class="card">
+    <h2>⚡ Utility Expenses ({{ utility_expenses|length }})</h2>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in utility_expenses %}
+                <tr>
+                    <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ expense.utility_type }}</td>
+                    <td>{{ expense.name }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="grand-total">
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td class="text-right"><strong>€{{ "%.2f"|format(utility_total) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stuff Expenses -->
+{% if stuff_expenses %}
+<div class="card">
+    <h2>🛒 Stuff Expenses ({{ stuff_expenses|length }})</h2>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in stuff_expenses %}
+                <tr>
+                    <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ expense.stuff_type }}</td>
+                    <td>{{ expense.name }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="grand-total">
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td class="text-right"><strong>€{{ "%.2f"|format(stuff_total) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Other Expenses -->
+{% if other_expenses %}
+<div class="card">
+    <h2>📝 Other Expenses ({{ other_expenses|length }})</h2>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in other_expenses %}
+                <tr>
+                    <td>{{ expense.expense_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ expense.name }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(expense.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="grand-total">
+                    <td colspan="2"><strong>Total</strong></td>
+                    <td class="text-right"><strong>€{{ "%.2f"|format(other_total) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if not food_expenses and not utility_expenses and not stuff_expenses and not other_expenses %}
+<div class="card">
+    <p class="text-center text-muted">No expenses found for {{ person }} in {{ month_name }} {{ year }}.</p>
+</div>
+{% endif %}
+{% endblock %}

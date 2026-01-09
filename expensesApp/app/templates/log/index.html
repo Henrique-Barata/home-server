@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Expense Activity Log - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📋 Activity Log</h1>
+</div>
+
+<p class="page-description">
+    Track all expenses added to the system. This log provides an audit trail of all expense transactions.
+</p>
+
+{% if logs %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Action</th>
+                    <th>Expense Type</th>
+                    <th>Description</th>
+                    <th>Person</th>
+                    <th class="text-right">Amount</th>
+                    <th>Expense Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') if log.created_at else '-' }}</td>
+                    <td>
+                        {% if log.action == 'added' %}
+                        <span class="action-badge added">+ Added</span>
+                        {% elif log.action == 'updated' %}
+                        <span class="action-badge updated">✎ Updated</span>
+                        {% elif log.action == 'deleted' %}
+                        <span class="action-badge deleted">🗑 Deleted</span>
+                        {% elif log.action == 'marked_paid' %}
+                        <span class="action-badge paid">✓ Marked Paid</span>
+                        {% elif log.action == 'marked_unpaid' %}
+                        <span class="action-badge unpaid">⚠ Marked Unpaid</span>
+                        {% else %}
+                        <span class="action-badge">{{ log.action }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.expense_type or '-' }}</td>
+                    <td>{{ log.description or '-' }}</td>
+                    <td>{{ log.paid_by or '-' }}</td>
+                    <td class="text-right">
+                        {% if log.amount %}
+                        €{{ "%.2f"|format(log.amount) }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.expense_date %}
+                        {{ log.expense_date.strftime('%d/%m/%Y') }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p class="text-center text-muted">No activity log entries yet.</p>
+</div>
+{% endif %}
+{% endblock %}

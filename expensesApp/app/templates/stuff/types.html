@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Stuff Types - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🏷️ Manage Stuff Types</h1>
+    <a href="{{ url_for('stuff.index') }}" class="btn btn-secondary">← Back to Stuff</a>
+</div>
+
+<!-- Add New Type -->
+<div class="card form-card">
+    <h2>Add New Type</h2>
+    <form method="POST" action="{{ url_for('stuff.add_type') }}" class="inline-form">
+        <div class="form-group">
+            <input type="text" name="name" required placeholder="Type name (e.g., Electronics)">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Type</button>
+    </form>
+</div>
+
+<!-- Existing Types -->
+<div class="card">
+    <h2>Existing Types</h2>
+    {% if stuff_types %}
+    <ul class="type-list">
+        {% for stype in stuff_types %}
+        <li class="type-item">
+            <span class="type-name">{{ stype.name }}</span>
+            <form action="{{ url_for('stuff.delete_type', type_id=stype.id) }}" method="POST" class="inline-form">
+                <button type="submit" class="btn btn-sm btn-danger" 
+                        onclick="return confirm('Delete type \'{{ stype.name }}\'? Expenses with this type will keep their type but it won\'t appear in the dropdown.')">
+                    Delete
+                </button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">No types created yet. Add one above.</p>
+    {% endif %}
+</div>
+{% endblock %}

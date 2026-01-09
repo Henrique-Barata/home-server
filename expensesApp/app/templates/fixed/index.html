@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Fixed Expenses - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📌 Fixed Expenses Management</h1>
+    <a href="{{ url_for('fixed.add_type') }}" class="btn btn-primary">+ Add Fixed Expense Type</a>
+</div>
+
+<p class="page-description">
+    Fixed expenses are recurring monthly costs. Changes apply to future months from the effective date.
+    Track payment status for each month in the monthly expense view.
+</p>
+
+{% for expense_type, data in expense_data.items() %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ expense_type }}</h2>
+        <a href="{{ url_for('fixed.update', expense_type=expense_type) }}" class="btn btn-primary">Update Value</a>
+    </div>
+    
+    <div class="current-value">
+        <strong>Current Value:</strong> €{{ "%.2f"|format(data.current_amount) }}
+        {% if data.current %}
+        <small>(effective since {{ data.current.effective_date.strftime('%d/%m/%Y') }} - Default paid by {{ data.current.paid_by or 'N/A' }})</small>
+        {% endif %}
+    </div>
+    
+    <div class="info-box">
+        ℹ️ To mark this expense as paid/unpaid for specific months, go to the monthly expense view.
+    </div>
+    
+    {% if data.history %}
+    <h3>Value History</h3>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Effective Date</th>
+                    <th class="text-right">Amount</th>
+                    <th>Default Paid By</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in data.history %}
+                <tr>
+                    <td>{{ record.effective_date.strftime('%d/%m/%Y') }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(record.amount) }}</td>
+                    <td>{{ record.paid_by or '-' }}</td>
+                    <td>{{ record.created_at.strftime('%d/%m/%Y') if record.created_at else 'N/A' }}</td>
+                    <td class="actions">
+                        <form action="{{ url_for('fixed.delete', expense_id=record.id) }}" method="POST" class="inline-form">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No records yet. Add a value to start tracking.</p>
+    {% endif %}
+    
+    {% if expense_type not in protected_types %}
+    <div class="card-footer">
+        <form action="{{ url_for('fixed.delete_type', expense_type=expense_type) }}" method="POST" class="inline-form">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this expense type and all its records?')">Delete Type</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if not expense_data %}
+<div class="card">
+    <p class="text-center">No fixed expense types defined. Click "Add Fixed Expense Type" to create one.</p>
+</div>
+{% endif %}
+{% endblock %}

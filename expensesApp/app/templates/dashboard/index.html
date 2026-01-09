@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 Monthly Overview</h1>
+    <div class="header-actions">
+        <form class="year-selector" method="GET">
+            <select name="year" onchange="this.form.submit()">
+                {% for year in available_years %}
+                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+            <input type="hidden" name="order" value="{{ sort_order }}">
+        </form>
+        <a href="{{ url_for('export.export_excel', year=selected_year) }}" class="btn btn-secondary">
+            📥 Export Excel
+        </a>
+    </div>
+</div>
+
+<!-- Monthly Summary Table -->
+<div class="card">
+    <h2>Monthly Expenses - {{ selected_year }}</h2>
+    <p class="table-hint">💡 Click on a month to see detailed breakdown. Click column headers to sort.</p>
+    <div class="table-responsive">
+        <table class="data-table sortable-table">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="?year={{ selected_year }}&sort=month&order={% if sort_by == 'month' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-header {% if sort_by == 'month' %}active {{ sort_order }}{% endif %}">
+                            Month {% if sort_by == 'month' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                    <th class="text-right">
+                        <a href="?year={{ selected_year }}&sort=fixed&order={% if sort_by == 'fixed' and sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="sort-header {% if sort_by == 'fixed' %}active {{ sort_order }}{% endif %}">
+                            Fixed {% if sort_by == 'fixed' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                    <th class="text-right">
+                        <a href="?year={{ selected_year }}&sort=utilities&order={% if sort_by == 'utilities' and sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="sort-header {% if sort_by == 'utilities' %}active {{ sort_order }}{% endif %}">
+                            Utilities {% if sort_by == 'utilities' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                    <th class="text-right">
+                        <a href="?year={{ selected_year }}&sort=food&order={% if sort_by == 'food' and sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="sort-header {% if sort_by == 'food' %}active {{ sort_order }}{% endif %}">
+                            Food {% if sort_by == 'food' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                    <th class="text-right">
+                        <a href="?year={{ selected_year }}&sort=stuff&order={% if sort_by == 'stuff' and sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="sort-header {% if sort_by == 'stuff' %}active {{ sort_order }}{% endif %}">
+                            Stuff {% if sort_by == 'stuff' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                    <th class="text-right">
+                        <a href="?year={{ selected_year }}&sort=other&order={% if sort_by == 'other' and sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="sort-header {% if sort_by == 'other' %}active {{ sort_order }}{% endif %}">
+                            Other {% if sort_by == 'other' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                    <th class="text-right">
+                        <a href="?year={{ selected_year }}&sort=total&order={% if sort_by == 'total' and sort_order == 'desc' %}asc{% else %}desc{% endif %}" class="sort-header {% if sort_by == 'total' %}active {{ sort_order }}{% endif %}">
+                            Total {% if sort_by == 'total' %}{% if sort_order == 'asc' %}▲{% else %}▼{% endif %}{% endif %}
+                        </a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for month in months_data %}
+                <tr class="clickable-row {% if month.month == current_month %}current-month{% endif %}" 
+                    onclick="window.location='{{ url_for('dashboard.month_detail', year=selected_year, month=month.month) }}'">
+                    <td>
+                        <a href="{{ url_for('dashboard.month_detail', year=selected_year, month=month.month) }}">
+                            {{ month.name }}
+                        </a>
+                    </td>
+                    <td class="text-right">€{{ "%.2f"|format(month.fixed) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(month.utilities) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(month.food) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(month.stuff) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(month.other) }}</td>
+                    <td class="text-right total">€{{ "%.2f"|format(month.total) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="grand-total">
+                    <td><strong>TOTAL</strong></td>
+                    <td class="text-right">€{{ "%.2f"|format(months_data|sum(attribute='fixed')) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(months_data|sum(attribute='utilities')) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(months_data|sum(attribute='food')) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(months_data|sum(attribute='stuff')) }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(months_data|sum(attribute='other')) }}</td>
+                    <td class="text-right"><strong>€{{ "%.2f"|format(yearly_total) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Per-Person Summary -->
+<div class="card">
+    <h2>👥 Per-Person Summary ({{ selected_year }})</h2>
+    <p class="table-hint">💡 Click on a person to see their detailed expenses.</p>
+    <div class="person-summary">
+        {% for person, total in person_totals.items() %}
+        <div class="person-card clickable-card" onclick="window.location='{{ url_for('dashboard.person_detail', person=person, year=selected_year) }}'">
+            <h3>{{ person }}</h3>
+            <p class="amount">€{{ "%.2f"|format(total) }}</p>
+            <a href="{{ url_for('dashboard.person_detail', person=person, year=selected_year) }}" class="btn btn-sm btn-secondary">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Balance Section -->
+{% if balance_data %}
+<div class="card balance-card">
+    <h2>⚖️ Balance Tracker</h2>
+    <div class="balance-summary">
+        <div class="balance-row">
+            <div class="balance-item">
+                <span class="label">{{ balance_data.person1 }} paid:</span>
+                <span class="value">€{{ "%.2f"|format(balance_data.total1) }}</span>
+            </div>
+            <div class="balance-item">
+                <span class="label">{{ balance_data.person2 }} paid:</span>
+                <span class="value">€{{ "%.2f"|format(balance_data.total2) }}</span>
+            </div>
+        </div>
+        <div class="balance-row">
+            <div class="balance-item">
+                <span class="label">Fair share each:</span>
+                <span class="value">€{{ "%.2f"|format(balance_data.fair_share) }}</span>
+            </div>
+            <div class="balance-item">
+                <span class="label">Settlements:</span>
+                <span class="value">€{{ "%.2f"|format(balance_data.settlement_total) }}</span>
+            </div>
+        </div>
+        
+        {% if balance_data.amount_owed > 0.01 %}
+        <div class="balance-result owes">
+            <strong>{{ balance_data.owes }}</strong> owes <strong>{{ balance_data.owed_to }}</strong> 
+            <span class="amount">€{{ "%.2f"|format(balance_data.amount_owed) }}</span>
+        </div>
+        {% else %}
+        <div class="balance-result settled">
+            ✅ All balanced! No one owes anything.
+        </div>
+        {% endif %}
+        
+        <div class="balance-actions">
+            <a href="{{ url_for('dashboard.settlement') }}" class="btn btn-primary">💸 Record Settlement</a>
+        </div>
+    </div>
+    
+    {% if settlements %}
+    <h3>Recent Settlements</h3>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th class="text-right">Amount</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in settlements %}
+                <tr>
+                    <td>{{ s.settlement_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ s.payer }}</td>
+                    <td>{{ s.receiver }}</td>
+                    <td class="text-right">€{{ "%.2f"|format(s.amount) }}</td>
+                    <td>{{ s.notes or '-' }}</td>
+                    <td>
+                        <form action="{{ url_for('dashboard.delete_settlement', settlement_id=s.id) }}" method="POST" class="inline-form">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this settlement?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Quick Links -->
+<div class="quick-links">
+    <h2>Quick Add</h2>
+    <div class="link-grid">
+        <a href="{{ url_for('food.add') }}" class="quick-link">🍕 Add Food</a>
+        <a href="{{ url_for('utilities.add') }}" class="quick-link">⚡ Add Utility</a>
+        <a href="{{ url_for('stuff.add') }}" class="quick-link">🛒 Add Stuff</a>
+        <a href="{{ url_for('other.add') }}" class="quick-link">📝 Add Other</a>
+    </div>
+</div>
+{% endblock %}

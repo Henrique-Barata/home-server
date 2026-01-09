@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}{{ expense_type }} - Payment History{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>{{ expense_type }} - Payment History</h1>
+        <p class="current-amount">Current: <strong>${{ "%.2f"|format(current_amount) }}</strong>/month</p>
+    </div>
+
+    <div class="back-link">
+        <a href="{{ url_for('fixed.index') }}">← Back to Fixed Expenses</a>
+    </div>
+
+    {% if payment_records %}
+        <div class="table-wrapper">
+            <table class="payments-table">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Month</th>
+                        <th>Status</th>
+                        <th>Paid By</th>
+                        <th>Paid Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payment_records %}
+                        <tr>
+                            <td>{{ payment.year }}</td>
+                            <td>{{ "%02d"|format(payment.month) }}</td>
+                            <td>
+                                {% if payment.is_paid %}
+                                    <span class="status-badge paid">✓ Paid</span>
+                                {% else %}
+                                    <span class="status-badge unpaid">⚠ Unpaid</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ payment.paid_by or '-' }}</td>
+                            <td>{{ payment.paid_date or '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No payment records found for this expense.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .page-header h1 {
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .current-amount {
+        color: var(--secondary-text);
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .current-amount strong {
+        color: var(--success-color);
+        font-size: 1.1rem;
+    }
+
+    .back-link {
+        margin-bottom: 2rem;
+    }
+
+    .back-link a {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .back-link a:hover {
+        text-decoration: underline;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        margin-bottom: 2rem;
+    }
+
+    .payments-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .payments-table thead {
+        background-color: var(--header-bg);
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .payments-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 0.9rem;
+    }
+
+    .payments-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .payments-table tbody tr:hover {
+        background-color: var(--hover-bg);
+    }
+
+    .payments-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .status-badge.paid {
+        background-color: var(--success-bg);
+        color: var(--success-color);
+    }
+
+    .status-badge.unpaid {
+        background-color: var(--warning-bg);
+        color: var(--warning-color);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--secondary-text);
+    }
+
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .payments-table th,
+        .payments-table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}

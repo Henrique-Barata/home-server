@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Add Fixed Expense Type - Expenses Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>➕ Add Fixed Expense Type</h1>
+</div>
+
+<div class="card">
+    <form method="POST" action="{{ url_for('fixed.add_type') }}">
+        <div class="form-group">
+            <label for="type_name">Expense Type Name</label>
+            <input type="text" id="type_name" name="type_name" required 
+                   placeholder="e.g., Insurance, Gym, Parking..."
+                   maxlength="50">
+            <small class="form-hint">Enter a name for the new fixed monthly expense.</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Type</button>
+            <a href="{{ url_for('fixed.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h3>💡 Tips</h3>
+    <p>Fixed expenses are recurring monthly costs that don't change often.</p>
+    <p>Examples: Insurance, Gym Membership, Parking, Subscriptions, etc.</p>
+</div>
+{% endblock %}

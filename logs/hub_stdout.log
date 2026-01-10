@@ -1,8 +1,8 @@
-2026-01-09 18:07:43 | INFO     | hub | Creating Hub application...
-2026-01-09 18:07:43 | INFO     | app_manager | Loaded config with 1 apps
-2026-01-09 18:07:43 | INFO     | app_manager | AppManager initialized with config: /Users/henrique.barata/CODE/home-server/hub/config.yaml
-2026-01-09 18:07:43 | INFO     | app_manager | Hub root: /Users/henrique.barata/CODE/home-server/hub
-2026-01-09 18:07:43 | INFO     | hub | Hub application created successfully
+2026-01-09 18:41:03 | INFO     | hub | Creating Hub application...
+2026-01-09 18:41:03 | INFO     | app_manager | Loaded config with 1 apps
+2026-01-09 18:41:03 | INFO     | app_manager | AppManager initialized with config: /Users/henrique.barata/CODE/home-server/hub/config.yaml
+2026-01-09 18:41:03 | INFO     | app_manager | Hub root: /Users/henrique.barata/CODE/home-server/hub
+2026-01-09 18:41:03 | INFO     | hub | Hub application created successfully
 
 ╔═══════════════════════════════════════════════════════════╗
 ║           🏠 Home Server Hub                              ║
@@ -15,23 +15,64 @@
 
  * Serving Flask app 'app'
  * Debug mode: off
-2026-01-09 18:07:57 | INFO     | api | API request to start app 'expenses'
-2026-01-09 18:07:57 | INFO     | app_manager | Loaded config with 1 apps
-2026-01-09 18:07:57 | INFO     | app_manager | AppManager initialized with config: /Users/henrique.barata/CODE/home-server/hub/config.yaml
-2026-01-09 18:07:57 | INFO     | app_manager | Hub root: /Users/henrique.barata/CODE/home-server/hub
-2026-01-09 18:07:57 | INFO     | app_manager | Starting app 'expenses'
-2026-01-09 18:07:57 | INFO     | app_manager | Starting with command: /Users/henrique.barata/CODE/home-server/expensesApp/venv/bin/python /Users/henrique.barata/CODE/home-server/expensesApp/run.py --host 127.0.0.1 --port 5000
-2026-01-09 18:07:57 | INFO     | app_manager | Started app 'expenses' with PID 82004
-2026-01-09 18:07:59 | INFO     | app_manager | App 'expenses' is now responding on port 5000
-2026-01-09 18:07:59 | INFO     | scheduler | AppActivityTracker initialized with 15m default timeout, 60s check interval
-2026-01-09 18:07:59 | INFO     | scheduler | Auto-shutdown scheduler started
-2026-01-09 18:08:05 | INFO     | api | Listed 1 apps
-2026-01-09 18:08:15 | INFO     | api | Listed 1 apps
-2026-01-09 18:08:25 | INFO     | api | Listed 1 apps
-2026-01-09 18:08:35 | INFO     | api | Listed 1 apps
-2026-01-09 18:08:45 | INFO     | api | Listed 1 apps
-2026-01-09 18:08:55 | INFO     | api | Listed 1 apps
-2026-01-09 18:09:35 | INFO     | api | Listed 1 apps
-2026-01-09 18:10:35 | INFO     | api | Listed 1 apps
-2026-01-09 18:11:35 | INFO     | api | Listed 1 apps
-2026-01-09 18:12:35 | INFO     | api | Listed 1 apps
+2026-01-09 18:41:09 | INFO     | app_manager | Loaded config with 1 apps
+2026-01-09 18:41:09 | INFO     | app_manager | AppManager initialized with config: /Users/henrique.barata/CODE/home-server/hub/config.yaml
+2026-01-09 18:41:09 | INFO     | app_manager | Hub root: /Users/henrique.barata/CODE/home-server/hub
+2026-01-09 18:41:09 | INFO     | api | Listed 1 apps
+2026-01-09 18:41:12 | INFO     | api | API request to start app 'expenses'
+2026-01-09 18:41:12 | INFO     | app_manager | Starting app 'expenses'
+2026-01-09 18:41:12 | INFO     | app_manager | Starting with command: /Users/henrique.barata/CODE/home-server/expensesApp/venv/bin/python /Users/henrique.barata/CODE/home-server/expensesApp/run.py --host 127.0.0.1 --port 5000
+2026-01-09 18:41:12 | INFO     | app_manager | Started app 'expenses' with PID 13816
+2026-01-09 18:41:14 | INFO     | app_manager | App 'expenses' is now responding on port 5000
+2026-01-09 18:41:14 | INFO     | scheduler | AppActivityTracker initialized with 15m default timeout, 60s check interval
+2026-01-09 18:41:14 | INFO     | scheduler | Auto-shutdown scheduler started
+2026-01-09 18:41:20 | INFO     | api | Listed 1 apps
+2026-01-09 18:41:30 | INFO     | api | Listed 1 apps
+2026-01-09 18:41:40 | INFO     | api | Listed 1 apps
+2026-01-09 18:41:50 | INFO     | api | Listed 1 apps
+2026-01-09 18:42:00 | INFO     | api | Listed 1 apps
+2026-01-09 18:42:10 | INFO     | api | Listed 1 apps
+2026-01-09 18:42:20 | INFO     | api | Listed 1 apps
+2026-01-09 18:42:35 | INFO     | api | Listed 1 apps
+2026-01-09 18:43:35 | INFO     | api | Listed 1 apps
+2026-01-09 18:43:58 | INFO     | api | Listed 1 apps
+2026-01-09 18:44:00 | INFO     | api | Listed 1 apps
+2026-01-09 18:44:10 | INFO     | api | Listed 1 apps
+2026-01-09 18:59:19 | INFO     | api | Listed 1 apps
+2026-01-09 18:59:29 | INFO     | api | Listed 1 apps
+2026-01-09 18:59:39 | INFO     | api | Listed 1 apps
+2026-01-09 18:59:49 | INFO     | api | Listed 1 apps
+2026-01-09 18:59:59 | INFO     | api | Listed 1 apps
+2026-01-09 19:15:13 | INFO     | scheduler | App 'expenses' idle for 33.8m (timeout: 15.0m) - stopping
+2026-01-09 19:15:13 | INFO     | app_manager | Stopping app 'expenses'
+2026-01-09 19:15:18 | WARNING  | app_manager | App 'expenses' did not stop gracefully, sending SIGKILL
+2026-01-09 19:15:18 | INFO     | app_manager | App 'expenses' stopped successfully
+2026-01-09 19:15:18 | INFO     | scheduler | App 'expenses' auto-stopped due to inactivity
+2026-01-09 19:15:33 | INFO     | api | Listed 1 apps
+2026-01-09 19:31:31 | INFO     | api | Listed 1 apps
+2026-01-09 20:16:00 | INFO     | api | Listed 1 apps
+2026-01-09 20:45:34 | INFO     | api | Listed 1 apps
+2026-01-09 21:46:47 | INFO     | api | Listed 1 apps
+2026-01-09 23:48:13 | INFO     | api | Listed 1 apps
+2026-01-10 00:49:26 | INFO     | api | Listed 1 apps
+2026-01-10 03:55:14 | INFO     | api | Listed 1 apps
+2026-01-10 07:45:53 | INFO     | api | Listed 1 apps
+2026-01-10 10:47:06 | INFO     | api | Listed 1 apps
+2026-01-10 10:47:22 | INFO     | api | Listed 1 apps
+2026-01-10 10:47:23 | INFO     | api | API request to start app 'expenses'
+2026-01-10 10:47:23 | INFO     | app_manager | Starting app 'expenses'
+2026-01-10 10:47:23 | INFO     | app_manager | Starting with command: /Users/henrique.barata/CODE/home-server/expensesApp/venv/bin/python /Users/henrique.barata/CODE/home-server/expensesApp/run.py --host 127.0.0.1 --port 5000
+2026-01-10 10:47:23 | INFO     | app_manager | Started app 'expenses' with PID 18684
+2026-01-10 10:47:25 | INFO     | app_manager | App 'expenses' is now responding on port 5000
+2026-01-10 10:47:31 | INFO     | api | Listed 1 apps
+2026-01-10 10:47:41 | INFO     | api | Listed 1 apps
+2026-01-10 10:47:51 | INFO     | api | Listed 1 apps
+2026-01-10 10:48:01 | INFO     | api | Listed 1 apps
+2026-01-10 10:48:11 | INFO     | api | Listed 1 apps
+2026-01-10 10:48:21 | INFO     | api | Listed 1 apps
+2026-01-10 10:48:31 | INFO     | api | Listed 1 apps
+2026-01-10 10:48:41 | INFO     | api | Listed 1 apps
+2026-01-10 10:48:51 | INFO     | api | Listed 1 apps
+2026-01-10 10:49:01 | INFO     | api | Listed 1 apps
+2026-01-10 10:49:11 | INFO     | api | Listed 1 apps
+2026-01-10 10:49:21 | INFO     | api | Listed 1 apps

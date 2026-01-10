@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if reimbursement %}Edit{% else %}Add{% endif %} Reimbursement - Expense Tracker
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="section-header">
+        <h1>
+            {% if reimbursement %}✏️ Edit Reimbursement{% else %}➕ Add New Reimbursement{% endif %}
+        </h1>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" class="form">
+            <div class="form-group">
+                <label for="name">Description *</label>
+                <input type="text" id="name" name="name" 
+                       value="{{ reimbursement.name if reimbursement else '' }}"
+                       placeholder="e.g., Table refund, Returned shoes"
+                       required maxlength="200">
+                <small>What was reimbursed?</small>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Amount ($) *</label>
+                <input type="number" id="amount" name="amount" 
+                       value="{{ "%.2f"|format(reimbursement.amount) if reimbursement else '' }}"
+                       placeholder="0.00"
+                       step="0.01" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reimbursed_to">Who Received the Money? *</label>
+                <select id="reimbursed_to" name="reimbursed_to" required>
+                    <option value="">-- Select a person --</option>
+                    {% for user in users %}
+                        <option value="{{ user.name }}" 
+                                {% if reimbursement and reimbursement.reimbursed_to == user.name %}selected{% endif %}>
+                            {{ user.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <small>The person who got the refund/reimbursement</small>
+            </div>
+
+            <div class="form-group">
+                <label for="reimbursement_date">Date *</label>
+                <input type="date" id="reimbursement_date" name="reimbursement_date" 
+                       value="{{ reimbursement.reimbursement_date.strftime('%Y-%m-%d') if reimbursement else '' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="original_expense_type">Original Expense Type</label>
+                <select id="original_expense_type" name="original_expense_type">
+                    <option value="">-- Not specified --</option>
+                    <option value="food" {% if reimbursement and reimbursement.original_expense_type == 'food' %}selected{% endif %}>
+                        Food
+                    </option>
+                    <option value="utilities" {% if reimbursement and reimbursement.original_expense_type == 'utilities' %}selected{% endif %}>
+                        Utilities
+                    </option>
+                    <option value="stuff" {% if reimbursement and reimbursement.original_expense_type == 'stuff' %}selected{% endif %}>
+                        Stuff
+                    </option>
+                    <option value="other" {% if reimbursement and reimbursement.original_expense_type == 'other' %}selected{% endif %}>
+                        Other
+                    </option>
+                </select>
+                <small>What type of expense was this originally?</small>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" maxlength="500" rows="3" 
+                          placeholder="Add any additional notes...">{{ reimbursement.notes if reimbursement else '' }}</textarea>
+                <small>Optional notes about this reimbursement</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if reimbursement %}Update Reimbursement{% else %}Add Reimbursement{% endif %}
+                </button>
+                <a href="{{ url_for('reimbursement.list_reimbursements') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="info-box">
+        <h3>💡 How Reimbursements Work</h3>
+        <p>
+            <strong>Reimbursements</strong> track money received back from returned items.
+            When you record a reimbursement:
+        </p>
+        <ul>
+            <li>The amount is <strong>subtracted</strong> from the account of the person who received it</li>
+            <li>The original shared expense is <strong>not affected</strong> (it stays split)</li>
+            <li>Other participants must pay the reimbursed person their share</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <ul>
+            <li>Alice buys a table for $100 (shared with Bob)</li>
+            <li>Alice's share: $50, Bob's share: $50</li>
+            <li>Alice returns the table, gets $100 back</li>
+            <li>Alice records a $100 reimbursement to herself</li>
+            <li>Settlement: Bob owes Alice $100 (his $50 + her $50)</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+.form-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.form-group small {
+    margin-top: 4px;
+    color: #666;
+    font-size: 12px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.form-actions .btn {
+    flex: 1;
+}
+
+.info-box {
+    background: #f0f8ff;
+    border-left: 4px solid #4CAF50;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 30px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.info-box h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.info-box ul {
+    padding-left: 20px;
+}
+
+.info-box li {
+    margin: 8px 0;
+}
+</style>
+{% endblock %}

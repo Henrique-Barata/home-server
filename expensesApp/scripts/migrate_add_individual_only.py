@@ -7,8 +7,10 @@ Example: Individual video game purchase
 import sqlite3
 from pathlib import Path
 import sys
+import os
 
-sys.path.insert(0, str(Path(__file__).parent))
+# Add parent directory to path to import app
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.config import get_config
 
@@ -35,7 +37,8 @@ def migrate_database():
         'food_expenses',
         'utility_expenses',
         'stuff_expenses',
-        'other_expenses'
+        'other_expenses',
+        'fixed_expenses'
     ]
     
     for table in tables_to_migrate:

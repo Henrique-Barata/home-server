@@ -39,7 +39,7 @@ def create_app(config_class=None):
     login_manager.login_message = "Please log in to access the application."
     
     # Register blueprints (routes)
-    from .routes import auth, dashboard, food, utilities, fixed, stuff, other, export, log
+    from .routes import auth, dashboard, food, utilities, fixed, stuff, other, export, log, reimbursement
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(dashboard.bp)
@@ -50,6 +50,7 @@ def create_app(config_class=None):
     app.register_blueprint(other.bp)
     app.register_blueprint(log.bp)
     app.register_blueprint(export.bp)
+    app.register_blueprint(reimbursement.bp)
     
     # User loader for Flask-Login
     from .models.user import User

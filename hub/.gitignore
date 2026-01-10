@@ -20,4 +20,16 @@ build/
 
 # Local files
 *.pid
-*.log
+*.loglogs/
+hub_stdout.log
+hub_stderr.log
+# OS files
+.DS_Store
+Thumbs.db
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.bak
+*~

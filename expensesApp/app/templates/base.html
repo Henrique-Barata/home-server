@@ -21,6 +21,7 @@
             <li><a href="{{ url_for('food.index') }}" {% if 'food' in request.endpoint %}class="active"{% endif %}>Food</a></li>
             <li><a href="{{ url_for('stuff.index') }}" {% if 'stuff' in request.endpoint %}class="active"{% endif %}>Stuff</a></li>
             <li><a href="{{ url_for('other.index') }}" {% if 'other' in request.endpoint %}class="active"{% endif %}>Other</a></li>
+            <li><a href="{{ url_for('reimbursement.list_reimbursements') }}" {% if 'reimbursement' in request.endpoint %}class="active"{% endif %}>Reimbursements</a></li>
             <li><a href="{{ url_for('log.index') }}" {% if 'log' in request.endpoint %}class="active"{% endif %}>Log</a></li>
             <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
         </ul>

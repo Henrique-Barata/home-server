@@ -124,4 +124,29 @@ class ExpenseLog:
             f"SELECT * FROM {cls.TABLE_NAME} WHERE paid_by = ? ORDER BY created_at DESC",
             (person,)
         )
-        return [cls.from_row(row) for row in rows]
+        return [cls.from_row(row) for row in rows]    
+    @classmethod
+    def log_reimbursement(cls, action: str, reimbursement_id: int, reimbursed_to: str,
+                         amount: float, description: str = "") -> int:
+        """
+        Log a reimbursement action.
+        
+        Args:
+            action: 'add', 'update', or 'delete'
+            reimbursement_id: ID of the reimbursement
+            reimbursed_to: Person who received the reimbursement
+            amount: Amount of reimbursement
+            description: Optional description
+        
+        Returns:
+            Log entry ID
+        """
+        log = cls(
+            action=action,
+            expense_type="reimbursement",
+            expense_id=reimbursement_id,
+            paid_by=reimbursed_to,  # Person who received money
+            amount=amount,
+            description=description
+        )
+        return log.save()

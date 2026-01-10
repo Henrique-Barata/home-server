@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Budget - {{ month_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 Budget - {{ month_name }}</h1>
+    <div class="header-actions">
+        <a href="{{ url_for('budget.add', year=year, month=month) }}" class="btn btn-primary">+ Add Budget</a>
+        <a href="{{ url_for('budget.quick_setup', year=year, month=month) }}" class="btn btn-secondary">Quick Setup</a>
+    </div>
+</div>
+
+<!-- Month Selector -->
+<div class="filter-bar">
+    <form method="get" class="month-selector">
+        <label for="month-select">Select Month:</label>
+        <select name="month" id="month-select" onchange="updateMonth()">
+            {% for opt in month_options %}
+            <option value="{{ opt.month }}" data-year="{{ opt.year }}" {% if opt.year == year and opt.month == month %}selected{% endif %}>
+                {{ '%02d'|format(opt.month) }}/{{ opt.year }}
+            </option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="year" id="year-input" value="{{ year }}">
+        <button type="submit" class="btn btn-small">Go</button>
+    </form>
+</div>
+
+<!-- Budget Summary -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <span class="summary-label">Total Budget</span>
+        <span class="summary-value">€{{ '%.2f'|format(total_budget) }}</span>
+    </div>
+    <div class="summary-card">
+        <span class="summary-label">Total Spent</span>
+        <span class="summary-value">€{{ '%.2f'|format(total_spent) }}</span>
+    </div>
+    <div class="summary-card {% if total_spent > total_budget %}summary-warning{% endif %}">
+        <span class="summary-label">Remaining</span>
+        <span class="summary-value">€{{ '%.2f'|format(total_budget - total_spent) }}</span>
+    </div>
+</div>
+
+<!-- Budget Categories -->
+<div class="budget-grid">
+    {% for category, status in category_statuses.items() %}
+    <div class="budget-card {{ status.status_class }}">
+        <div class="budget-header">
+            <h3>{{ category }}</h3>
+            {% if status.budget_id %}
+            <div class="budget-actions">
+                <a href="{{ url_for('budget.edit', budget_id=status.budget_id) }}" class="btn btn-small">Edit</a>
+                <form method="post" action="{{ url_for('budget.delete', budget_id=status.budget_id) }}" style="display:inline;" onsubmit="return confirm('Delete budget for {{ category }}?');">
+                    <button type="submit" class="btn btn-small btn-danger">Delete</button>
+                </form>
+            </div>
+            {% else %}
+            <a href="{{ url_for('budget.add', year=year, month=month, category=category) }}" class="btn btn-small">Set Budget</a>
+            {% endif %}
+        </div>
+        
+        <div class="budget-amounts">
+            <div class="budget-spent">
+                <span class="label">Spent</span>
+                <span class="value">€{{ '%.2f'|format(status.spent) }}</span>
+            </div>
+            <div class="budget-limit">
+                <span class="label">Budget</span>
+                <span class="value">{% if status.monthly_limit > 0 %}€{{ '%.2f'|format(status.monthly_limit) }}{% else %}Not set{% endif %}</span>
+            </div>
+            <div class="budget-remaining">
+                <span class="label">Remaining</span>
+                <span class="value">{% if status.monthly_limit > 0 %}€{{ '%.2f'|format(status.remaining) }}{% else %}-{% endif %}</span>
+            </div>
+        </div>
+        
+        {% if status.monthly_limit > 0 %}
+        <div class="progress-bar">
+            <div class="progress-fill {{ status.status_class }}" style="width: {{ [status.percentage_used, 100] | min }}%"></div>
+        </div>
+        <div class="budget-percentage">
+            {{ '%.1f'|format(status.percentage_used) }}% used
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Copy Budgets -->
+<div class="section-divider"></div>
+<div class="copy-budgets-section">
+    <h3>Copy Budgets from Another Month</h3>
+    <form method="post" action="{{ url_for('budget.copy_month') }}" class="copy-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="from_month">From:</label>
+                <select name="from_month" id="from_month" onchange="updateFromYear()">
+                    {% for opt in month_options %}
+                    <option value="{{ opt.month }}" data-year="{{ opt.year }}">
+                        {{ '%02d'|format(opt.month) }}/{{ opt.year }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="from_year" id="from_year" value="{{ month_options[0].year if month_options else year }}">
+            </div>
+            <div class="form-group">
+                <label>To:</label>
+                <span class="month-display">{{ '%02d'|format(month) }}/{{ year }}</span>
+                <input type="hidden" name="to_year" value="{{ year }}">
+                <input type="hidden" name="to_month" value="{{ month }}">
+            </div>
+            <button type="submit" class="btn btn-secondary">Copy Budgets</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function updateMonth() {
+    var select = document.getElementById('month-select');
+    var option = select.options[select.selectedIndex];
+    document.getElementById('year-input').value = option.dataset.year;
+}
+
+function updateFromYear() {
+    var select = document.getElementById('from_month');
+    var option = select.options[select.selectedIndex];
+    document.getElementById('from_year').value = option.dataset.year;
+}
+</script>
+
+<style>
+.budget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.budget-card {
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.budget-card.budget-over {
+    border-left: 4px solid #dc3545;
+}
+
+.budget-card.budget-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.budget-card.budget-ok {
+    border-left: 4px solid #28a745;
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.budget-header h3 {
+    margin: 0;
+}
+
+.budget-amounts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.budget-amounts > div {
+    text-align: center;
+}
+
+.budget-amounts .label {
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.budget-amounts .value {
+    display: block;
+    font-weight: bold;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.budget-ok { background: #28a745; }
+.progress-fill.budget-warning { background: #ffc107; }
+.progress-fill.budget-over { background: #dc3545; }
+
+.budget-percentage {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.copy-budgets-section {
+    background: var(--card-bg, #f8f9fa);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.copy-form .form-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.month-display {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #e9ecef;
+    border-radius: 4px;
+}
+
+.summary-cards {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.summary-card {
+    flex: 1;
+    min-width: 150px;
+    padding: 1rem;
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-card.summary-warning {
+    background: #fff3cd;
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.summary-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.section-divider {
+    border-top: 1px solid #e9ecef;
+    margin: 2rem 0;
+}
+</style>
+{% endblock %}

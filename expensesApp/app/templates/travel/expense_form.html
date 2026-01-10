@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{% if expense %}Edit{% else %}Add{% endif %} Expense - {{ travel.name }} - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="section-header">
+        <a href="{{ url_for('travel.detail', travel_id=travel.id) }}" class="back-link">← Back to {{ travel.name }}</a>
+        <h1>
+            {% if expense %}✏️ Edit Expense{% else %}➕ Add Expense{% endif %}
+        </h1>
+        <p class="travel-context">For travel: <strong>{{ travel.name }}</strong></p>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" class="form">
+            <div class="form-group">
+                <label for="category">Category *</label>
+                <select id="category" name="category" required>
+                    <option value="">Select a category...</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" 
+                            {% if (expense and expense.category == cat) or (selected_category == cat) %}selected{% endif %}>
+                        {% if cat == 'Transportation' %}🚗 
+                        {% elif cat == 'Accommodation' %}🏨 
+                        {% elif cat == 'Food & Dining' %}🍽️ 
+                        {% elif cat == 'Activities & Entertainment' %}🎭 
+                        {% else %}📦 {% endif %}
+                        {{ cat }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Description *</label>
+                <input type="text" id="name" name="name" 
+                       value="{{ expense.name if expense else '' }}"
+                       placeholder="e.g., Train tickets to Barcelona"
+                       required maxlength="200">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="amount">Amount (€) *</label>
+                    <input type="number" id="amount" name="amount" 
+                           value="{{ "%.2f"|format(expense.amount) if expense else '' }}"
+                           placeholder="0.00"
+                           step="0.01" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="paid_by">Who Paid *</label>
+                    <select id="paid_by" name="paid_by" required>
+                        <option value="">Select person...</option>
+                        {% for user in users %}
+                        <option value="{{ user }}" 
+                                {% if expense and expense.paid_by == user %}selected{% endif %}>
+                            {{ user }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="expense_date">Date *</label>
+                <input type="date" id="expense_date" name="expense_date" 
+                       value="{{ expense.expense_date.strftime('%Y-%m-%d') if expense else today.isoformat() }}"
+                       min="{{ travel.start_date.strftime('%Y-%m-%d') }}"
+                       max="{{ travel.end_date.strftime('%Y-%m-%d') }}"
+                       required>
+                <small>Date should be within the travel period ({{ travel.start_date.strftime('%b %d') }} - {{ travel.end_date.strftime('%b %d, %Y') }})</small>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" maxlength="500" rows="2" 
+                          placeholder="Add any details about this expense...">{{ expense.notes if expense else '' }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if expense %}Update Expense{% else %}Add Expense{% endif %}
+                </button>
+                <a href="{{ url_for('travel.detail', travel_id=travel.id) }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    {% if expense %}
+    <div class="danger-zone">
+        <form method="POST" action="{{ url_for('travel.delete_expense', travel_id=travel.id, expense_id=expense.id) }}" 
+              onsubmit="return confirm('Are you sure you want to delete this expense?');">
+            <button type="submit" class="btn btn-danger btn-sm">
+                🗑️ Delete Expense
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.back-link {
+    display: inline-block;
+    color: var(--primary-color, #667eea);
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.travel-context {
+    color: var(--text-secondary, #666);
+}
+
+.form-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--text-secondary, #666);
+    font-size: 0.85rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.danger-zone {
+    margin-top: 2rem;
+    max-width: 600px;
+    text-align: right;
+}
+
+.btn-danger {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: #c53030;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

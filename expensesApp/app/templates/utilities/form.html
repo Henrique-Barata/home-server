@@ -53,14 +53,6 @@
                    value="{{ selected_date.isoformat() if selected_date else today.isoformat() }}">
         </div>
         
-        <div class="form-group">
-            <label for="individual_only">
-                <input type="checkbox" id="individual_only" name="individual_only" 
-                       {% if expense and expense.individual_only %}checked{% endif %}>
-                <span>Individual Only (not split with others)</span>
-            </label>
-        </div>
-        
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">{% if expense %}Update{% else %}Add{% endif %} Expense</button>
             <a href="{{ url_for('utilities.index') }}" class="btn btn-secondary">Cancel</a>

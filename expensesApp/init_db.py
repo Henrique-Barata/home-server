@@ -166,6 +166,62 @@ def init_database():
         )
     """)
     
+    # === Reimbursements Table ===
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reimbursements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            amount REAL NOT NULL DEFAULT 0,
+            reimbursed_to TEXT NOT NULL,
+            original_expense_type TEXT,
+            original_expense_id INTEGER,
+            reimbursement_date DATE NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # === Travels Table ===
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS travels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            start_date DATE NOT NULL,
+            end_date DATE NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # === Travel Expenses Table ===
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS travel_expenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            travel_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            amount REAL NOT NULL DEFAULT 0,
+            paid_by TEXT NOT NULL,
+            category TEXT NOT NULL,
+            expense_date DATE NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(travel_id) REFERENCES travels(id) ON DELETE CASCADE
+        )
+    """)
+    
+    # === Budgets Table ===
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS budgets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category TEXT NOT NULL,
+            monthly_limit REAL NOT NULL DEFAULT 0,
+            year INTEGER NOT NULL,
+            month INTEGER NOT NULL,
+            notes TEXT,
+            UNIQUE(category, year, month)
+        )
+    """)
+    
     # Create indexes for better query performance
     cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_food_date 
@@ -204,6 +260,44 @@ def init_database():
         ON expense_logs(expense_type)
     """)
     
+    # Reimbursement indexes
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_reimbursement_date 
+        ON reimbursements(reimbursement_date)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_reimbursement_person 
+        ON reimbursements(reimbursed_to)
+    """)
+    
+    # Travel indexes
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_travel_date 
+        ON travels(start_date)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_travel_expense_travel 
+        ON travel_expenses(travel_id)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_travel_expense_category 
+        ON travel_expenses(travel_id, category)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_travel_expense_date 
+        ON travel_expenses(expense_date)
+    """)
+    
+    # Budget indexes
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_budget_month 
+        ON budgets(year, month)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_budget_category 
+        ON budgets(category, year, month)
+    """)
+    
     conn.commit()
     conn.close()
     
@@ -217,6 +311,11 @@ def init_database():
     print("  - fixed_expense_types")
     print("  - stuff_types")
     print("  - settlements")
+    print("  - expense_logs")
+    print("  - reimbursements")
+    print("  - travels")
+    print("  - travel_expenses")
+    print("  - budgets")
     print("\nYou can now run the application with: python run.py")
 
 

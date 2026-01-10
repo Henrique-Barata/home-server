@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}{{ travel.name }} - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="section-header">
+        <a href="{{ url_for('travel.index') }}" class="back-link">← Back to Travels</a>
+        <h1>✈️ {{ travel.name }}</h1>
+        <p class="travel-dates">
+            {{ travel.start_date.strftime('%B %d') }} - {{ travel.end_date.strftime('%B %d, %Y') }}
+        </p>
+    </div>
+
+    <div class="travel-summary">
+        <div class="summary-card main-total">
+            <h3>Total Expenses</h3>
+            <p class="amount-large">€{{ "%.2f"|format(total) }}</p>
+        </div>
+        
+        <div class="summary-grid">
+            {% for category in categories %}
+            <div class="summary-card category-card">
+                <h4>{{ category }}</h4>
+                <p class="amount">€{{ "%.2f"|format(category_totals.get(category, 0)) }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if person_totals %}
+        <div class="person-summary">
+            <h3>Who Paid What</h3>
+            <div class="person-grid">
+                {% for person, amount in person_totals.items() %}
+                <div class="person-card">
+                    <span class="person-name">{{ person }}</span>
+                    <span class="person-amount">€{{ "%.2f"|format(amount) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="actions-bar">
+        <a href="{{ url_for('travel.add_expense', travel_id=travel.id) }}" class="btn btn-primary">
+            ➕ Add Expense
+        </a>
+        <a href="{{ url_for('travel.edit', travel_id=travel.id) }}" class="btn btn-secondary">
+            ✏️ Edit Travel
+        </a>
+    </div>
+
+    <div class="expenses-by-category">
+        {% for category in categories %}
+        <div class="category-section" id="category-{{ loop.index }}">
+            <div class="category-header">
+                <h2>
+                    {% if category == 'Transportation' %}🚗
+                    {% elif category == 'Accommodation' %}🏨
+                    {% elif category == 'Food & Dining' %}🍽️
+                    {% elif category == 'Activities & Entertainment' %}🎭
+                    {% else %}📦{% endif %}
+                    {{ category }}
+                </h2>
+                <span class="category-total">€{{ "%.2f"|format(category_totals.get(category, 0)) }}</span>
+                <a href="{{ url_for('travel.add_expense', travel_id=travel.id, category=category) }}" 
+                   class="btn btn-sm btn-primary">+ Add</a>
+            </div>
+            
+            {% set expenses = expenses_by_category.get(category, []) %}
+            {% if expenses %}
+            <div class="expenses-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Paid By</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td>{{ expense.expense_date.strftime('%b %d') if expense.expense_date else '—' }}</td>
+                            <td>
+                                {{ expense.name }}
+                                {% if expense.notes %}
+                                <span class="expense-notes" title="{{ expense.notes }}">💬</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ expense.paid_by }}</td>
+                            <td class="amount">€{{ "%.2f"|format(expense.amount) }}</td>
+                            <td class="actions">
+                                <a href="{{ url_for('travel.edit_expense', travel_id=travel.id, expense_id=expense.id) }}" 
+                                   class="btn btn-xs btn-secondary">Edit</a>
+                                <form method="POST" 
+                                      action="{{ url_for('travel.delete_expense', travel_id=travel.id, expense_id=expense.id) }}"
+                                      style="display: inline;">
+                                    <button type="submit" class="btn btn-xs btn-danger"
+                                            onclick="return confirm('Delete this expense?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-expenses">
+                <p>No expenses in this category yet.</p>
+                <a href="{{ url_for('travel.add_expense', travel_id=travel.id, category=category) }}" 
+                   class="btn btn-sm btn-outline">Add first expense</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if travel.notes %}
+    <div class="travel-notes">
+        <h3>📝 Notes</h3>
+        <p>{{ travel.notes }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.back-link {
+    display: inline-block;
+    color: var(--primary-color, #667eea);
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.travel-dates {
+    color: var(--text-secondary, #666);
+    font-size: 1.1rem;
+}
+
+.travel-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-card.main-total {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.summary-card.main-total h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.summary-card.main-total .amount-large {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.category-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.category-card h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #666);
+    font-weight: normal;
+}
+
+.category-card .amount {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--primary-color, #667eea);
+    margin: 0;
+}
+
+.person-summary {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.person-summary h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    color: var(--text-secondary, #666);
+}
+
+.person-grid {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.person-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.person-name {
+    font-weight: 500;
+}
+
+.person-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color, #667eea);
+}
+
+.actions-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.category-section {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-light, #f8f9fa);
+    border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.category-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    flex: 1;
+}
+
+.category-total {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--primary-color, #667eea);
+}
+
+.expenses-table {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.table th {
+    font-weight: 500;
+    color: var(--text-secondary, #666);
+    font-size: 0.85rem;
+}
+
+.table tbody tr:hover {
+    background: var(--bg-light, #f8f9fa);
+}
+
+.table .amount {
+    font-weight: 600;
+    color: var(--success-color, #28a745);
+}
+
+.expense-notes {
+    cursor: help;
+    margin-left: 0.25rem;
+}
+
+.no-expenses {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary, #666);
+}
+
+.no-expenses p {
+    margin: 0 0 1rem 0;
+}
+
+.travel-notes {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+}
+
+.travel-notes h3 {
+    margin: 0 0 0.75rem 0;
+}
+
+.travel-notes p {
+    margin: 0;
+    color: var(--text-secondary, #666);
+    white-space: pre-wrap;
+}
+
+.btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--primary-color, #667eea);
+    color: var(--primary-color, #667eea);
+}
+
+.btn-outline:hover {
+    background: var(--primary-color, #667eea);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .category-header {
+        flex-wrap: wrap;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}

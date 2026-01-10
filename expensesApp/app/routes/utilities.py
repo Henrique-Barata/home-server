@@ -83,7 +83,8 @@ def add():
         paid_by = request.form.get('paid_by', '')
         expense_date = date.fromisoformat(request.form.get('expense_date', str(default_date)))
         utility_type = request.form.get('utility_type', '')
-        individual_only = request.form.get('individual_only') == 'on'
+        # Utility expenses are always shared, individual_only not allowed
+        individual_only = False
         
         expense = UtilityExpense(
             name=name,
@@ -138,7 +139,8 @@ def edit(expense_id):
         expense.paid_by = request.form.get('paid_by', '')
         expense.expense_date = date.fromisoformat(request.form.get('expense_date', str(date.today())))
         expense.utility_type = request.form.get('utility_type', '')
-        expense.individual_only = request.form.get('individual_only') == 'on'
+        # Utility expenses are always shared, individual_only not allowed
+        expense.individual_only = False
         expense.save()
         flash('Utility expense updated successfully!', 'success')
         return redirect(url_for('utilities.index'))

@@ -1,0 +1,42 @@
+Alembic Database Migrations
+===========================
+
+This directory contains database migration scripts managed by Alembic.
+
+The migrations are designed to work with the raw SQL / Active Record pattern
+used by this application (no SQLAlchemy ORM).
+
+Usage
+-----
+
+Run migrations:
+    alembic upgrade head
+
+Create a new migration:
+    alembic revision -m "description of change"
+
+Show current version:
+    alembic current
+
+Show migration history:
+    alembic history
+
+Downgrade one version:
+    alembic downgrade -1
+
+Downgrade to specific version:
+    alembic downgrade <revision_id>
+
+Notes
+-----
+
+Since this application uses raw SQL queries instead of SQLAlchemy ORM,
+autogenerate won't work. All migrations must be written manually.
+
+Each migration should include both upgrade() and downgrade() functions
+to allow rolling back changes.
+
+For SQLite-specific considerations:
+- SQLite doesn't support DROP COLUMN or ALTER COLUMN in all cases
+- Use batch_alter_table for complex table modifications
+- Consider data migrations for column type changes

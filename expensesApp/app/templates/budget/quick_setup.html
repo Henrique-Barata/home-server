@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Quick Budget Setup - {{ month_name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>⚡ Quick Budget Setup - {{ month_name }}</h1>
+    <p class="subtitle">Set budgets for all categories at once</p>
+</div>
+
+<form method="post" class="quick-setup-form">
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    
+    <div class="budget-table">
+        <div class="budget-table-header">
+            <span class="col-category">Category</span>
+            <span class="col-limit">Monthly Limit (€)</span>
+            <span class="col-notes">Notes</span>
+        </div>
+        
+        {% for category in categories %}
+        <div class="budget-table-row">
+            <div class="col-category">
+                <strong>{{ category }}</strong>
+                {% if category in existing_budgets %}
+                <span class="badge badge-existing">Existing</span>
+                {% endif %}
+            </div>
+            <div class="col-limit">
+                <input type="number" 
+                       name="limit_{{ category }}" 
+                       step="0.01" 
+                       min="0" 
+                       max="1000000"
+                       placeholder="0.00"
+                       value="{{ existing_budgets[category].monthly_limit if category in existing_budgets else '' }}">
+            </div>
+            <div class="col-notes">
+                <input type="text" 
+                       name="notes_{{ category }}" 
+                       maxlength="100"
+                       placeholder="Optional note..."
+                       value="{{ existing_budgets[category].notes if category in existing_budgets else '' }}">
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save All Budgets</button>
+        <a href="{{ url_for('budget.index', year=year, month=month) }}" class="btn btn-secondary">Cancel</a>
+    </div>
+    
+    <div class="form-help">
+        <p><strong>Tip:</strong> Leave a field empty to skip that category. Existing budgets will be updated.</p>
+    </div>
+</form>
+
+<style>
+.quick-setup-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.subtitle {
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.budget-table {
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.budget-table-header {
+    display: grid;
+    grid-template-columns: 150px 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    font-weight: bold;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.budget-table-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    align-items: center;
+}
+
+.budget-table-row:last-child {
+    border-bottom: none;
+}
+
+.budget-table-row:hover {
+    background: #f8f9fa;
+}
+
+.col-category {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+}
+
+.badge-existing {
+    background: #17a2b8;
+    color: white;
+}
+
+.col-limit input,
+.col-notes input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-help {
+    color: #666;
+    font-size: 0.9rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+    .budget-table-header {
+        display: none;
+    }
+    
+    .budget-table-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .col-category {
+        font-size: 1.1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .col-limit::before {
+        content: "Limit: ";
+        font-weight: 500;
+    }
+    
+    .col-notes::before {
+        content: "Notes: ";
+        font-weight: 500;
+    }
+}
+</style>
+{% endblock %}

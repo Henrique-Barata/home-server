@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Travels - Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="section-header">
+        <h1>✈️ Travels</h1>
+        <p>Track expenses for your trips and adventures</p>
+    </div>
+
+    <div class="toolbar">
+        <div class="year-selector">
+            <label for="year">Year:</label>
+            <select id="year" onchange="window.location.href='{{ url_for('travel.index') }}?year=' + this.value">
+                {% for year in available_years %}
+                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <a href="{{ url_for('travel.add') }}" class="btn btn-primary">
+            ➕ Add New Travel
+        </a>
+    </div>
+
+    {% if travel_data %}
+        <div class="yearly-summary">
+            <div class="summary-card">
+                <h3>{{ selected_year }} Total</h3>
+                <p class="amount-large">€{{ "%.2f"|format(yearly_total) }}</p>
+                <span class="travel-count">{{ travel_data|length }} travel(s)</span>
+            </div>
+        </div>
+
+        <div class="travels-grid">
+            {% for data in travel_data %}
+            <div class="travel-card">
+                <div class="travel-header">
+                    <h3>{{ data.travel.name }}</h3>
+                    <span class="travel-dates">
+                        {{ data.travel.start_date.strftime('%b %d') }} - {{ data.travel.end_date.strftime('%b %d, %Y') }}
+                    </span>
+                </div>
+                
+                <div class="travel-total">
+                    <span class="label">Total Expenses</span>
+                    <span class="amount">€{{ "%.2f"|format(data.total) }}</span>
+                </div>
+                
+                <div class="category-breakdown">
+                    {% for category in categories %}
+                        {% if data.category_totals.get(category, 0) > 0 %}
+                        <div class="category-item">
+                            <span class="category-name">{{ category }}</span>
+                            <span class="category-amount">€{{ "%.2f"|format(data.category_totals[category]) }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if data.person_totals %}
+                <div class="person-breakdown">
+                    <h4>Paid by:</h4>
+                    {% for person, amount in data.person_totals.items() %}
+                    <div class="person-item">
+                        <span class="person-name">{{ person }}</span>
+                        <span class="person-amount">€{{ "%.2f"|format(amount) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="travel-actions">
+                    <a href="{{ url_for('travel.detail', travel_id=data.travel.id) }}" class="btn btn-primary btn-sm">
+                        View Details
+                    </a>
+                    <a href="{{ url_for('travel.edit', travel_id=data.travel.id) }}" class="btn btn-secondary btn-sm">
+                        Edit
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">✈️</div>
+            <h3>No travels yet in {{ selected_year }}</h3>
+            <p>Start tracking your travel expenses by adding your first trip!</p>
+            <a href="{{ url_for('travel.add') }}" class="btn btn-primary">
+                ➕ Add First Travel
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.year-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.year-selector select {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color, #ddd);
+}
+
+.yearly-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.summary-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.summary-card .amount-large {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.summary-card .travel-count {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.travels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.travel-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.travel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.travel-header {
+    border-bottom: 1px solid var(--border-color, #eee);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.travel-header h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+}
+
+.travel-dates {
+    color: var(--text-secondary, #666);
+    font-size: 0.9rem;
+}
+
+.travel-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-light, #f8f9fa);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.travel-total .label {
+    font-weight: 500;
+}
+
+.travel-total .amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color, #667eea);
+}
+
+.category-breakdown {
+    margin-bottom: 1rem;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--border-color, #eee);
+    font-size: 0.9rem;
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-name {
+    color: var(--text-secondary, #666);
+}
+
+.category-amount {
+    font-weight: 500;
+}
+
+.person-breakdown {
+    background: var(--bg-light, #f8f9fa);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.person-breakdown h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #666);
+}
+
+.person-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.travel-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #eee);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state p {
+    color: var(--text-secondary, #666);
+    margin-bottom: 1.5rem;
+}
+</style>
+{% endblock %}

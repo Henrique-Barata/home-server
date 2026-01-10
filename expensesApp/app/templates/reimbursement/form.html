@@ -24,7 +24,7 @@
             </div>
 
             <div class="form-group">
-                <label for="amount">Amount ($) *</label>
+                <label for="amount">Amount (€) *</label>
                 <input type="number" id="amount" name="amount" 
                        value="{{ "%.2f"|format(reimbursement.amount) if reimbursement else '' }}"
                        placeholder="0.00"
@@ -36,9 +36,9 @@
                 <select id="reimbursed_to" name="reimbursed_to" required>
                     <option value="">-- Select a person --</option>
                     {% for user in users %}
-                        <option value="{{ user.name }}" 
-                                {% if reimbursement and reimbursement.reimbursed_to == user.name %}selected{% endif %}>
-                            {{ user.name }}
+                        <option value="{{ user }}" 
+                                {% if reimbursement and reimbursement.reimbursed_to == user %}selected{% endif %}>
+                            {{ user }}
                         </option>
                     {% endfor %}
                 </select>

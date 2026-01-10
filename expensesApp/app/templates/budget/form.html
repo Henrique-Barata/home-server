@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{% if budget %}Edit Budget{% else %}Add Budget{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if budget %}✏️ Edit Budget{% else %}📊 Add Budget{% endif %}</h1>
+</div>
+
+<form method="post" class="form-card">
+    <div class="form-group">
+        <label for="category">Category *</label>
+        <select name="category" id="category" required>
+            <option value="">Select category...</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if (budget and budget.category == cat) or (preset_category == cat) %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="monthly_limit">Monthly Limit (€) *</label>
+        <input type="number" name="monthly_limit" id="monthly_limit" 
+               step="0.01" min="0" max="1000000" required
+               value="{{ budget.monthly_limit if budget else '' }}"
+               placeholder="e.g., 500.00">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="month">Month *</label>
+            <select name="month" id="month" required>
+                {% for m in range(1, 13) %}
+                <option value="{{ m }}" {% if (budget and budget.month == m) or (not budget and month == m) %}selected{% endif %}>
+                    {{ '%02d'|format(m) }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="year">Year *</label>
+            <input type="number" name="year" id="year" 
+                   min="2020" max="2100" required
+                   value="{{ budget.year if budget else year }}">
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea name="notes" id="notes" rows="3" maxlength="500"
+                  placeholder="Optional notes about this budget...">{{ budget.notes if budget else '' }}</textarea>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            {% if budget %}Save Changes{% else %}Add Budget{% endif %}
+        </button>
+        <a href="{{ url_for('budget.index', year=year, month=month) }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<style>
+.form-card {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+</style>
+{% endblock %}

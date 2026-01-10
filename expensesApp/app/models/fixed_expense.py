@@ -115,6 +115,18 @@ class FixedExpense:
         return row['amount'] if row else 0.0
     
     @classmethod
+    def get_total_by_month(cls, year: int, month: int) -> float:
+        """
+        Get the total of all fixed expenses for a specific month.
+        Sums the applicable value for each expense type.
+        """
+        all_types = FixedExpenseType.get_all_types()
+        total = 0.0
+        for expense_type in all_types:
+            total += cls.get_value_for_month(expense_type, year, month)
+        return total
+    
+    @classmethod
     def get_all_current(cls) -> dict:
         """
         Get current values for all fixed expense types.

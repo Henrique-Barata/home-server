@@ -72,7 +72,8 @@ def add():
         amount = float(request.form.get('amount', 0))
         paid_by = request.form.get('paid_by', '')
         expense_date = date.fromisoformat(request.form.get('expense_date', str(default_date)))
-        individual_only = request.form.get('individual_only') == 'on'
+        # Food expenses are always shared, individual_only not allowed
+        individual_only = False
         
         expense = FoodExpense(
             name=name,
@@ -121,7 +122,8 @@ def edit(expense_id):
         expense.amount = float(request.form.get('amount', 0))
         expense.paid_by = request.form.get('paid_by', '')
         expense.expense_date = date.fromisoformat(request.form.get('expense_date', str(date.today())))
-        expense.individual_only = request.form.get('individual_only') == 'on'
+        # Food expenses are always shared, individual_only not allowed
+        expense.individual_only = False
         expense.save()
         flash('Food expense updated successfully!', 'success')
         return redirect(url_for('food.index'))

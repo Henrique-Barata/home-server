@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Search Expenses{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🔍 Search Expenses</h1>
+</div>
+
+<!-- Search Form -->
+<form method="get" class="search-form">
+    <div class="search-main">
+        <input type="text" name="q" value="{{ query }}" 
+               placeholder="Search by name, description, person..."
+               class="search-input" autofocus>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+    
+    <!-- Advanced Filters (collapsible) -->
+    <details class="search-filters" {% if date_from or date_to or person or selected_types %}open{% endif %}>
+        <summary>Advanced Filters</summary>
+        
+        <div class="filter-grid">
+            <!-- Expense Type Filter -->
+            <div class="filter-group">
+                <label>Expense Types:</label>
+                <div class="checkbox-group">
+                    {% for key, info in expense_types.items() %}
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="type" value="{{ key }}"
+                               {% if key in selected_types %}checked{% endif %}>
+                        {{ info.icon }} {{ info.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Date Range Filter -->
+            <div class="filter-group">
+                <label>Date Range:</label>
+                <div class="date-range">
+                    <input type="date" name="date_from" value="{{ date_from }}" placeholder="From">
+                    <span>to</span>
+                    <input type="date" name="date_to" value="{{ date_to }}" placeholder="To">
+                </div>
+            </div>
+            
+            <!-- Person Filter -->
+            <div class="filter-group">
+                <label for="person">Person:</label>
+                <select name="person" id="person">
+                    <option value="">All</option>
+                    {% for user in users %}
+                    <option value="{{ user }}" {% if person == user %}selected{% endif %}>{{ user }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="filter-actions">
+            <a href="{{ url_for('search.index') }}" class="btn btn-secondary btn-small">Clear Filters</a>
+        </div>
+    </details>
+</form>
+
+<!-- Results -->
+{% if query %}
+<div class="search-results-header">
+    <h2>
+        {% if total > 0 %}
+            Found {{ total }} result{% if total != 1 %}s{% endif %} for "{{ query }}"
+        {% else %}
+            No results found for "{{ query }}"
+        {% endif %}
+    </h2>
+    {% if total > 0 %}
+    <div class="results-summary">
+        Total amount: <strong>€{{ '%.2f'|format(total_amount) }}</strong>
+    </div>
+    {% endif %}
+</div>
+
+{% if results %}
+<div class="results-list">
+    {% for result in results %}
+    <a href="{{ result.url }}" class="result-card">
+        <div class="result-icon">{{ result.icon }}</div>
+        <div class="result-info">
+            <div class="result-name">{{ result.name }}</div>
+            <div class="result-meta">
+                <span class="result-type">{{ result.type_name }}</span>
+                <span class="result-date">{{ result.date }}</span>
+                <span class="result-person">{{ result.paid_by }}</span>
+            </div>
+        </div>
+        <div class="result-amount">€{{ '%.2f'|format(result.amount) }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% elif query %}
+<div class="no-results">
+    <p>Try different keywords or check the filters.</p>
+    <p>Tips:</p>
+    <ul>
+        <li>Use partial words (e.g., "groc" for "groceries")</li>
+        <li>Search by person name</li>
+        <li>Try clearing the filters</li>
+    </ul>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Initial state -->
+<div class="search-tips">
+    <h3>Search Tips</h3>
+    <ul>
+        <li>Search by expense name or description</li>
+        <li>Search by person who paid</li>
+        <li>Use partial words for broader results</li>
+        <li>Combine with filters to narrow results</li>
+    </ul>
+    
+    <h3>Recent Quick Links</h3>
+    <div class="quick-links">
+        <a href="{{ url_for('food.index') }}" class="quick-link">🍕 Food</a>
+        <a href="{{ url_for('utilities.index') }}" class="quick-link">💡 Utilities</a>
+        <a href="{{ url_for('stuff.index') }}" class="quick-link">📦 Stuff</a>
+        <a href="{{ url_for('other.index') }}" class="quick-link">📝 Other</a>
+        <a href="{{ url_for('travel.index') }}" class="quick-link">✈️ Travel</a>
+        <a href="{{ url_for('reimbursement.list_reimbursements') }}" class="quick-link">💰 Reimbursements</a>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.search-form {
+    margin-bottom: 2rem;
+}
+
+.search-main {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+    border: 2px solid #ced4da;
+    border-radius: 8px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color, #007bff);
+}
+
+.search-filters {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.search-filters summary {
+    cursor: pointer;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.filter-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.filter-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: normal;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.date-range input {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.filter-actions {
+    margin-top: 1rem;
+}
+
+.search-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.search-results-header h2 {
+    margin: 0;
+}
+
+.results-summary {
+    color: #666;
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.result-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.result-card:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transform: translateX(4px);
+}
+
+.result-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    text-align: center;
+}
+
+.result-info {
+    flex: 1;
+}
+
+.result-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.result-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+
+.result-type {
+    background: #e9ecef;
+    padding: 0.1rem 0.5rem;
+    border-radius: 3px;
+}
+
+.result-amount {
+    font-weight: bold;
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.no-results ul {
+    text-align: left;
+    display: inline-block;
+}
+
+.search-tips {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.search-tips h3 {
+    margin-top: 0;
+}
+
+.quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.quick-link {
+    padding: 0.5rem 1rem;
+    background: var(--card-bg, #fff);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.quick-link:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 600px) {
+    .search-results-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .result-card {
+        flex-wrap: wrap;
+    }
+    
+    .result-amount {
+        width: 100%;
+        text-align: right;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+}
+</style>
+{% endblock %}

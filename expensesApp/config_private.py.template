@@ -9,6 +9,14 @@ This file contains sensitive information like passwords and personal data.
 
 # Security Settings
 SECRET_KEY = "your-secret-key-here-make-it-random-and-long"
+
+# App Password - RECOMMENDED: Use a hashed password for security
+# To generate a hashed password, run:
+#   python scripts/hash_password.py
+# Then paste the output here. Example format:
+#   APP_PASSWORD = "pbkdf2:sha256:600000$..."
+# 
+# Legacy plaintext passwords still work but will show a security warning.
 APP_PASSWORD = "your-app-password-here"
 
 # User Configuration
